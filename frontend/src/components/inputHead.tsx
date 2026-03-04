@@ -1,27 +1,77 @@
-import { useState } from "react";
 import { supabase } from "../config/supabase";
 
-function Header(){
-    const [expression,setExpression]=useState<string>("");
-    const calculate=(exp:string)=>{
-        try {
-            return eval(exp)
-        } catch {
-            return ""
-        }
-    }
-    const addtoDatabase=async()=>{
-        const entry:string=expression+"="+result;
-        const res=await supabase.from("cal").insert({expression:entry});
-        console.log(res)
-    }
-    const result=calculate(expression);
+type Props = {
+  expression: string;
+  setExpression: (val: string) => void;
+  editingId: number | null;
+  setEditingId: (id: number | null) => void;
+  refresh: () => void;
+};
 
-    return (
+function Header({
+  expression,
+  setExpression,
+  editingId,
+  setEditingId,
+  refresh
+}: Props) {
+
+  const calculate = (exp: string) => {
+    try {
+      return eval(exp);
+    } catch {
+      return "";
+    }
+  };
+
+  const result = calculate(expression);
+
+  const saveExpression = async () => {
+
+    if (!expression || result === "") return;
+
+    if (editingId) {
+
+      await supabase
+        .from("cal")
+        .update({
+          expression,
+          result
+        })
+        .eq("id", editingId);
+
+      setEditingId(null);
+
+    } else {
+
+      await supabase
+        .from("cal")
+        .insert({
+          expression,
+          result
+        });
+
+    }
+
+    setExpression("");
+    refresh();
+  };
+
+  return (
     <>
-        <input placeholder="Enter expression 100*30" onChange={(e)=>setExpression(e.target.value)} value={expression}/>
-        <label >{result}</label>
-        <button onClick={addtoDatabase}>Add expression</button>
-    </>);
+      <input
+        placeholder="Enter expression"
+        value={expression}
+        onChange={(e) => setExpression(e.target.value)}
+      />
+
+      <label>{result}</label>
+
+      <button onClick={saveExpression}>
+        {editingId ? "Update Expression" : "Add Expression"}
+      </button>
+    </>
+  );
 }
+
 export default Header;

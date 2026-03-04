@@ -1,22 +1,34 @@
-// import { useEffect } from "react";
-
+import { useState } from "react";
 import ExistingExpressions from "./components/existingExpression";
 import Header from "./components/inputHead";
 
-// import { supabase } from "./config/supabase";
-function App(){
-  // const testBase=async()=>{
-  //   console.log("Test base");
-  //   const res=await supabase.from("cal").insert([{expression:"1+1=2"}]);
-  //   console.log(res);
-  // }
-  // useEffect(()=>{
-  //   testBase();
-  // },[])
+function App() {
+
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [expression, setExpression] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const refresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
-  <>
-  <Header/>
-  <ExistingExpressions/>
-  </>);
+    <>
+      <Header
+        expression={expression}
+        setExpression={setExpression}
+        editingId={editingId}
+        setEditingId={setEditingId}
+        refresh={refresh}
+      />
+
+      <ExistingExpressions
+        refreshKey={refreshKey}
+        setExpression={setExpression}
+        setEditingId={setEditingId}
+      />
+    </>
+  );
 }
+
 export default App;
